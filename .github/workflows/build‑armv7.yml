@@ -24,10 +24,10 @@ jobs:
           version="dev-${GITHUB_SHA::7}"
           echo "version=${version}" >> "${GITHUB_OUTPUT}"
 
-      - name: Install cross‑gcc for armhf
+      - name: Install cross-gcc for armhf
         run: |
           sudo apt update
-          sudo apt install -y gcc‑arm‑linux‑gnueabihf
+          sudo apt install -y gcc-arm-linux-gnueabihf
 
       - name: Set up Go
         uses: actions/setup-go@v7
@@ -42,8 +42,8 @@ jobs:
           GOARCH: arm
           GOARM: 7
           CGO_ENABLED: 1
-          CC: arm‑linux‑gnueabihf‑gcc
-          CGO_CFLAGS: "-march=armv7‑a -mtune=cortex‑a9 -mfpu=vfpv3‑d16 -mfloat‑abi=hard"
+          CC: arm-linux-gnueabihf-gcc
+          CGO_CFLAGS: "-march=armv7-a -mtune=cortex-a9 -mfpu=vfpv3-d16 -mfloat-abi=hard"
         run: |
           set -euo pipefail
           mkdir -p dist build
@@ -57,13 +57,13 @@ jobs:
           go build \
             -trimpath \
             -ldflags="${ldflags}" \
-            -o "build/storage‑migrate_linux_armv7l" ./cmd/storage‑migrate
+            -o "build/storage-migrate_linux_armv7l" ./cmd/storage-migrate
 
-          cp build/sillyGirl_linux_armv7l build/storage‑migrate_linux_armv7l dist/
-          (cd dist && sha256sum sillyGirl_* storage‑migrate_* > checksums.txt)
+          cp build/sillyGirl_linux_armv7l build/storage-migrate_linux_armv7l dist/
+          (cd dist && sha256sum sillyGirl_* storage-migrate_* > checksums.txt)
 
       - name: Upload artifact
-        uses: actions/upload‑artifact@v7
+        uses: actions/upload-artifact@v7
         with:
-          name: sillyGirl‑K3‑armv7l
+          name: sillyGirl-K3-armv7l
           path: dist/*
