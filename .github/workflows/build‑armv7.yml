@@ -1,6 +1,9 @@
 name: Build K3‑armv7 binary
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -8,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: Build sillyGirl for K3(armv7)
+    name: Build sillyGirl for K3(armv7l Cortex‑A9)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -26,30 +29,34 @@ jobs:
         with:
           go-version: "1.26.5"
 
-      - name: Build linux/arm GOARM=7 (K3)
+      - name: Build linux/arm GOARM=7 (K3 BCM5301X Cortex‑A9)
         shell: bash
         env:
           VERSION: ${{ steps.vars.outputs.version }}
+          GOOS: linux
+          GOARCH: arm
+          GOARM: 7
+          CGO_ENABLED: 0
         run: |
           set -euo pipefail
           mkdir -p dist build
           ldflags="-s -w -X github.com/smallfawn/sillyGirl/core.compiled_at=${VERSION}"
 
-          GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=0 go build \
+          go build \
             -trimpath \
             -ldflags="${ldflags}" \
-            -o "build/sillyGirl_linux_armv7" .
+            -o "build/sillyGirl_linux_armv7l" .
 
-          GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=0 go build \
+          go build \
             -trimpath \
             -ldflags="${ldflags}" \
-            -o "build/storage-migrate_linux_armv7" ./cmd/storage-migrate
+            -o "build/storage-migrate_linux_armv7l" ./cmd/storage-migrate
 
-          cp build/sillyGirl_linux_armv7 build/storage-migrate_linux_armv7 dist/
+          cp build/sillyGirl_linux_armv7l build/storage-migrate_linux_armv7l dist/
           (cd dist && sha256sum sillyGirl_* storage-migrate_* > checksums.txt)
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: sillyGirl-K3-armv7
+          name: sillyGirl-K3-armv7l
           path: dist/*
