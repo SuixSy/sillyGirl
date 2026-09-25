@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: Build sillyGirl for K3(Cortex‑A9 VFPv3)
+    name: Build sillyGirl for K3(Cortex‑A9 no‑neon)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -24,26 +24,20 @@ jobs:
           version="dev-${GITHUB_SHA::7}"
           echo "version=${version}" >> "${GITHUB_OUTPUT}"
 
-      - name: Install cross-gcc for armhf
-        run: |
-          sudo apt update
-          sudo apt install -y gcc-arm-linux-gnueabihf
-
       - name: Set up Go
         uses: actions/setup-go@v7
         with:
           go-version: "1.26.5"
 
-      - name: Build for K3 Cortex‑A9 VFPv3
+      - name: Build static no‑neon for K3 Cortex‑A9
         shell: bash
         env:
           VERSION: ${{ steps.vars.outputs.version }}
           GOOS: linux
           GOARCH: arm
           GOARM: 7
-          CGO_ENABLED: 1
-          CC: arm-linux-gnueabihf-gcc
-          CGO_CFLAGS: "-march=armv7-a -mtune=cortex-a9 -mfpu=vfpv3-d16 -mfloat-abi=hard"
+          CGO_ENABLED: 0
+          GOARM7NOVFP4: "1"
         run: |
           set -euo pipefail
           mkdir -p dist build
