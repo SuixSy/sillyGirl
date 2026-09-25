@@ -18,7 +18,7 @@ jobs:
         id: vars
         shell: bash
         run: |
-          version="dev‑${GITHUB_SHA::7}"
+          version="dev-${GITHUB_SHA::7}"
           echo "version=${version}" >> "${GITHUB_OUTPUT}"
 
       - name: Set up Go
@@ -43,13 +43,13 @@ jobs:
           GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=0 go build \
             -trimpath \
             -ldflags="${ldflags}" \
-            -o "build/storage‑migrate_linux_armv7" ./cmd/storage‑migrate
+            -o "build/storage-migrate_linux_armv7" ./cmd/storage-migrate
 
-          cp build/sillyGirl_linux_armv7 build/storage‑migrate_linux_armv7 dist/
-          (cd dist && sha256sum sillyGirl_* storage‑migrate_* > checksums.txt)
+          cp build/sillyGirl_linux_armv7 build/storage-migrate_linux_armv7 dist/
+          (cd dist && sha256sum sillyGirl_* storage-migrate_* > checksums.txt)
 
       - name: Upload artifact
-        uses: actions/upload‑artifact@v7
+        uses: actions/upload-artifact@v7
         with:
-          name: sillyGirl‑K3‑armv7
+          name: sillyGirl-K3-armv7
           path: dist/*
