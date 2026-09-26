@@ -1,4 +1,4 @@
-name: Build K3-armv7 binary
+name: Build K3-armv7 musl static
 
 on:
   push:
@@ -11,28 +11,30 @@ permissions:
 
 jobs:
   build:
-    name: Build sillyGirl for K3(Cortex-A9 VFPv3-d16)
+    name: Build sillyGirl K3 Cortex-A9 no-neon musl
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
         uses: actions/checkout@v7
 
-      - name: Resolve dev version
+      - name: Resolve version
         id: vars
         shell: bash
         run: |
           version="dev-${GITHUB_SHA::7}"
           echo "version=${version}" >> "${GITHUB_OUTPUT}"
 
-      - name: Install arm-linux-gnueabihf-gcc
-        run: sudo apt update && sudo apt install -y gcc-arm-linux-gnueabihf
+      - name: Install zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          zig-version: 0.14.0
 
-      - name: Set up Go
+      - name: Set up Go 1.26.5
         uses: actions/setup-go@v7
         with:
           go-version: "1.26.5"
 
-      - name: Build for K3 Cortex-A9 VFPv3-d16
+      - name: Build static musl armv7 no-neon
         shell: bash
         env:
           VERSION: ${{ steps.vars.outputs.version }}
@@ -40,8 +42,9 @@ jobs:
           GOARCH: arm
           GOARM: 7
           CGO_ENABLED: 1
-          CC: arm-linux-gnueabihf-gcc
-          CGO_CFLAGS: "-march=armv7-a -mtune=cortex-a9 -mfpu=vfpv3-d16 -mfloat-abi=hard"
+          CC: zig cc
+          CGO_CFLAGS: "-target arm-linux-musleabihf -march=armv7-a -mtune=cortex-a9 -mfpu=vfpv3-d16"
+          CGO_LDFLAGS: "-static"
         run: |
           set -euo pipefail
           mkdir -p dist build
@@ -50,18 +53,18 @@ jobs:
           go build \
             -trimpath \
             -ldflags="${ldflags}" \
-            -o "build/sillyGirl_linux_armv7l" .
+            -o "build/sillyGirl_linux_armv7l_musl" .
 
           go build \
             -trimpath \
             -ldflags="${ldflags}" \
-            -o "build/storage-migrate_linux_armv7l" ./cmd/storage-migrate
+            -o "build/storage-migrate_linux_armv7l_musl" ./cmd/storage-migrate
 
-          cp build/sillyGirl_linux_armv7l build/storage-migrate_linux_armv7l dist/
+          cp build/sillyGirl_linux_armv7l_musl build/storage-migrate_linux_armv7l_musl dist/
           (cd dist && sha256sum sillyGirl_* storage-migrate_* > checksums.txt)
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: sillyGirl-K3-armv7l
+          name: sillyGirl-K3-armv7l-musl
           path: dist/*
