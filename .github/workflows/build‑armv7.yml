@@ -43,7 +43,8 @@ jobs:
           GOARM: 7
           CGO_ENABLED: 1
           CC: zig cc
-          CGO_CFLAGS: "-target arm-linux-musleabihf -march=armv7-a -mtune=cortex-a9 -mfpu=vfpv3-d16"
+          # zig: mtune 使用下划线 cortex_a9；-mfpu=vfpv3-d16 关闭NEON
+          CGO_CFLAGS: "-target arm-linux-musleabihf -march=armv7-a -mtune=cortex_a9 -mfpu=vfpv3-d16"
           CGO_LDFLAGS: "-static"
         run: |
           set -euo pipefail
