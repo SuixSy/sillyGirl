@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: Build sillyGirl for K3(Cortex‑A9 no‑neon)
+    name: Build sillyGirl for K3(Cortex‑A9 no-neon)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -24,12 +24,12 @@ jobs:
           version="dev-${GITHUB_SHA::7}"
           echo "version=${version}" >> "${GITHUB_OUTPUT}"
 
-      - name: Set up Go
+      - name: Set up Go 1.21.13
         uses: actions/setup-go@v7
         with:
-          go-version: "1.26.5"
+          go-version: "1.21.13"
 
-      - name: Build static no‑neon for K3 Cortex‑A9
+      - name: Build static CGO=0
         shell: bash
         env:
           VERSION: ${{ steps.vars.outputs.version }}
@@ -37,7 +37,6 @@ jobs:
           GOARCH: arm
           GOARM: 7
           CGO_ENABLED: 0
-          GOARM7NOVFP4: "1"
         run: |
           set -euo pipefail
           mkdir -p dist build
