@@ -1,4 +1,4 @@
-name: Build K3‑armv7 binary
+name: Build K3-armv7 binary
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: Build sillyGirl for K3(Cortex‑A9 VFPv3‑d16)
+    name: Build sillyGirl for K3(Cortex-A9 VFPv3-d16)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -24,15 +24,15 @@ jobs:
           version="dev-${GITHUB_SHA::7}"
           echo "version=${version}" >> "${GITHUB_OUTPUT}"
 
-      - name: Install arm‑linux‑gnueabihf‑gcc
+      - name: Install arm-linux-gnueabihf-gcc
         run: sudo apt update && sudo apt install -y gcc-arm-linux-gnueabihf
 
-      - name: Set up Go 1.26.5（满足go.mod最低版本）
+      - name: Set up Go
         uses: actions/setup-go@v7
         with:
           go-version: "1.26.5"
 
-      - name: Build static disable NEON VFPv3‑d16
+      - name: Build for K3 Cortex-A9 VFPv3-d16
         shell: bash
         env:
           VERSION: ${{ steps.vars.outputs.version }}
@@ -41,7 +41,7 @@ jobs:
           GOARM: 7
           CGO_ENABLED: 1
           CC: arm-linux-gnueabihf-gcc
-          CGO_CFLAGS: "-march=armv7‑a -mtune=cortex‑a9 -mfpu=vfpv3‑d16 -mfloat‑abi=hard"
+          CGO_CFLAGS: "-march=armv7-a -mtune=cortex-a9 -mfpu=vfpv3-d16 -mfloat-abi=hard"
         run: |
           set -euo pipefail
           mkdir -p dist build
@@ -55,13 +55,13 @@ jobs:
           go build \
             -trimpath \
             -ldflags="${ldflags}" \
-            -o "build/storage‑migrate_linux_armv7l" ./cmd/storage‑migrate
+            -o "build/storage-migrate_linux_armv7l" ./cmd/storage-migrate
 
-          cp build/sillyGirl_linux_armv7l build/storage‑migrate_linux_armv7l dist/
-          (cd dist && sha256sum sillyGirl_* storage‑migrate_* > checksums.txt)
+          cp build/sillyGirl_linux_armv7l build/storage-migrate_linux_armv7l dist/
+          (cd dist && sha256sum sillyGirl_* storage-migrate_* > checksums.txt)
 
       - name: Upload artifact
-        uses: actions/upload‑artifact@v7
+        uses: actions/upload-artifact@v7
         with:
-          name: sillyGirl‑K3‑armv7l
+          name: sillyGirl-K3-armv7l
           path: dist/*
