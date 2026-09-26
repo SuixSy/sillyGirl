@@ -24,10 +24,13 @@ jobs:
           version="dev-${GITHUB_SHA::7}"
           echo "version=${version}" >> "${GITHUB_OUTPUT}"
 
-      - name: Install zig
-        uses: goto-bus-stop/setup-zig@v2
-        with:
-          zig-version: 0.14.0
+      - name: Install musl-cross arm-linux-musleabihf
+        run: |
+          sudo apt update
+          sudo apt install -y wget tar
+          wget https://musl.cc/arm-linux-musleabihf-cross.tgz
+          sudo tar -zxf arm-linux-musleabihf-cross.tgz -C /opt/
+          echo "/opt/arm-linux-musleabihf-cross/bin" >> $GITHUB_PATH
 
       - name: Set up Go 1.26.5
         uses: actions/setup-go@v7
@@ -41,11 +44,10 @@ jobs:
           GOOS: linux
           GOARCH: arm
           GOARM: 7
-          CGO_ENABLED: 1
-          CC: zig cc
-          # zig: mtune 使用下划线 cortex_a9；-mfpu=vfpv3-d16 关闭NEON
-          CGO_CFLAGS: "-target arm-linux-musleabihf -march=armv7-a -mtune=cortex_a9 -mfpu=vfpv3-d16"
-          CGO_LDFLAGS: "-static"
+          CGO_ENABLED: 0
+          CC: arm-linux-musleabihf-gcc
+          CXX: arm-linux-musleabihf-g++
+          GOFLAGS: "-ldflags=-extld=arm-linux-musleabihf-gcc -extldflags='-march=armv7-a -mfpu=vfpv3-d16 -static'"
         run: |
           set -euo pipefail
           mkdir -p dist build
@@ -53,11 +55,13 @@ jobs:
 
           go build \
             -trimpath \
+            ${GOFLAGS} \
             -ldflags="${ldflags}" \
             -o "build/sillyGirl_linux_armv7l_musl" .
 
           go build \
             -trimpath \
+            ${GOFLAGS} \
             -ldflags="${ldflags}" \
             -o "build/storage-migrate_linux_armv7l_musl" ./cmd/storage-migrate
 
