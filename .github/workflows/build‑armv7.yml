@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: Build sillyGirl K3 Cortex-A9 no-neon musl
+    name: Build sillyGirl K3 Cortex‑A9 no‑neon musl
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -21,23 +21,21 @@ jobs:
         id: vars
         shell: bash
         run: |
-          version="dev-${GITHUB_SHA::7}"
+          version="dev‑${GITHUB_SHA::7}"
           echo "version=${version}" >> "${GITHUB_OUTPUT}"
 
-      - name: Install musl-cross arm-linux-musleabihf
-        run: |
-          sudo apt update
-          sudo apt install -y wget tar
-          wget https://musl.cc/arm-linux-musleabihf-cross.tgz
-          sudo tar -zxf arm-linux-musleabihf-cross.tgz -C /opt/
-          echo "/opt/arm-linux-musleabihf-cross/bin" >> $GITHUB_PATH
+      # cross‑rs 预下载好工具链，不走musl.cc，网络稳定
+      - name: Install cross‑rs
+        uses: taiki‑e/cross@v0.2.5
+        with:
+          target: arm‑linux‑musleabihf
 
       - name: Set up Go 1.26.5
-        uses: actions/setup-go@v7
+        uses: actions/setup‑go@v7
         with:
-          go-version: "1.26.5"
+          go‑version: "1.26.5"
 
-      - name: Build static musl armv7 no-neon
+      - name: Build static musl armv7 no‑neon
         shell: bash
         env:
           VERSION: ${{ steps.vars.outputs.version }}
@@ -45,31 +43,32 @@ jobs:
           GOARCH: arm
           GOARM: 7
           CGO_ENABLED: 0
-          CC: arm-linux-musleabihf-gcc
-          CXX: arm-linux-musleabihf-g++
-          GOFLAGS: "-ldflags=-extld=arm-linux-musleabihf-gcc -extldflags='-march=armv7-a -mfpu=vfpv3-d16 -static'"
+          CC: arm‑linux‑musleabihf‑gcc
+          GOFLAGS: "-ldflags=-extld=arm‑linux‑musleabihf‑gcc -extldflags='‑march=armv7‑a ‑mfpu=vfpv3‑d16 ‑static'"
         run: |
-          set -euo pipefail
-          mkdir -p dist build
-          ldflags="-s -w -X github.com/smallfawn/sillyGirl/core.compiled_at=${VERSION}"
+          set ‑euo pipefail
+          mkdir ‑p dist build
+          ldflags="‑s ‑w ‑X github.com/smallfawn/sillyGirl/core.compiled_at=${VERSION}"
 
-          go build \
-            -trimpath \
+          cross build \
+            ‑‑target arm‑linux‑musleabihf \
+            ‑‑trimpath \
             ${GOFLAGS} \
-            -ldflags="${ldflags}" \
-            -o "build/sillyGirl_linux_armv7l_musl" .
+            ‑ldflags="${ldflags}" \
+            ‑o "build/sillyGirl_linux_armv7l_musl" .
 
-          go build \
-            -trimpath \
+          cross build \
+            ‑‑target arm‑linux‑musleabihf \
+            ‑‑trimpath \
             ${GOFLAGS} \
-            -ldflags="${ldflags}" \
-            -o "build/storage-migrate_linux_armv7l_musl" ./cmd/storage-migrate
+            ‑ldflags="${ldflags}" \
+            ‑o "build/storage‑migrate_linux_armv7l_musl" ./cmd/storage‑migrate
 
-          cp build/sillyGirl_linux_armv7l_musl build/storage-migrate_linux_armv7l_musl dist/
-          (cd dist && sha256sum sillyGirl_* storage-migrate_* > checksums.txt)
+          cp build/sillyGirl_linux_armv7l_musl build/storage‑migrate_linux_armv7l_musl dist/
+          (cd dist && sha256sum sillyGirl_* storage‑migrate_* > checksums.txt)
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload‑artifact@v7
         with:
-          name: sillyGirl-K3-armv7l-musl
+          name: sillyGirl‑K3‑armv7l‑musl
           path: dist/*
