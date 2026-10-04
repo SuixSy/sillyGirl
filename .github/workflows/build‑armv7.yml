@@ -11,16 +11,6 @@ jobs:
       - name: 拉取源码
         uses: actions/checkout@v5
 
-      - name: 安装Node22编译admin前端
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: |
-          cd admin
-          npm install
-          npm run build
-          cd ..
-
       - name: 安装Go编译器
         uses: actions/setup-go@v5
         with:
