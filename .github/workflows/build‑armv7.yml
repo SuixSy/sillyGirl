@@ -2,7 +2,7 @@ name: Build sillyGirl armv7(K3)
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:  # 网页手动点按钮编译
+  workflow_dispatch:
 
 jobs:
   build:
@@ -11,12 +11,12 @@ jobs:
       - name: 拉取源码
         uses: actions/checkout@v5
 
-      - name: 安装Node22编译web前端
+      - name: 安装Node22编译admin前端
         uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: |
-          cd web
+          cd admin
           npm install
           npm run build
           cd ..
