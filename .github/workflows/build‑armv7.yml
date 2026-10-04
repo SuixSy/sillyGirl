@@ -1,7 +1,5 @@
-name: Build sillyGirl armv7(K3 ipq806x)
+name: Build sillyGirl K3 ipq806x
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -11,23 +9,25 @@ jobs:
       - name: 拉取源码
         uses: actions/checkout@v5
 
-      - name: 安装Go编译器
+      - name: 使用Go1.20（关键！规避Cortex‑A9硬件div问题）
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.20.14'
 
-      - name: 交叉编译，针对ipq806x cortex‑A9，关闭硬件除法
+      - name: 交叉编译
         env:
           CGO_ENABLED: 0
           GOOS: linux
           GOARCH: arm
           GOARM: 7
-          GODEBUG: cpu.divhardware=0
         run: |
-          go build -ldflags "-w -s" -o sillygirl-k3-armv7 .
+          go build -ldflags "-w -s" -o sillygirl-k3 .
 
-      - name: 下载编译产物
-        uses: actions/upload-artifact@v4
+      - name: Release发布
+        uses: softprops/action-gh-release@v2
         with:
-          name: sillygirl-k3-armv7-bin
-          path: sillygirl-k3-armv7
+          tag_name: k3-build
+          name: sillyGirl‑ipq806x‑K3
+          files: sillygirl-k3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
