@@ -1,36 +1,42 @@
-name: Build-K3-Go121-armv7
+name: Build sillyGirl armv7(K3)
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
-
-permissions:
-  contents: write
+  workflow_dispatch:  # 网页手动点按钮编译
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: 拉取源码
+        uses: actions/checkout@v5
 
-      - name: Setup Go 1.21.13
-        uses: actions/setup-go@v4
+      - name: 安装Node22编译web前端
+        uses: actions/setup-node@v4
         with:
-          go-version: "1.21.13"
+          node-version: 22
+      - run: |
+          cd web
+          npm install
+          npm run build
+          cd ..
 
-      - name: compile armv7 no-neon for K3
+      - name: 安装Go编译器
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: 交叉编译 Linux‑armv7 静态二进制(K3 cortex‑a9)
         env:
+          CGO_ENABLED: 0
           GOOS: linux
           GOARCH: arm
           GOARM: 7
-          CGO_ENABLED: 0
         run: |
-          mkdir -p dist
-          go build -trimpath -ldflags="-s -w" -o ./dist/sillyGirl_linux_armv7 .
-          go build -trimpath -ldflags="-s -w" -o ./dist/storage-migrate ./cmd/storage-migrate
+          go build -ldflags "-w -s" -o sillygirl-k3-armv7 .
 
-      - name: upload artifact
+      - name: 下载编译产物
         uses: actions/upload-artifact@v4
         with:
-          name: sillygirl-k3-armv7-go121
-          path: dist/
+          name: sillygirl-k3-armv7-bin
+          path: sillygirl-k3-armv7
