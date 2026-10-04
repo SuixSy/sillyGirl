@@ -1,4 +1,4 @@
-name: Build sillyGirl armv7(K3)
+name: Build sillyGirl armv7(K3 ipq806x)
 on:
   push:
     branches: [ main ]
@@ -16,12 +16,13 @@ jobs:
         with:
           go-version: '1.23'
 
-      - name: 交叉编译 Linux‑armv7 静态二进制(K3 cortex‑a9)
+      - name: 交叉编译，针对ipq806x cortex‑A9，关闭硬件除法
         env:
           CGO_ENABLED: 0
           GOOS: linux
           GOARCH: arm
           GOARM: 7
+          GODEBUG: cpu.divhardware=0
         run: |
           go build -ldflags "-w -s" -o sillygirl-k3-armv7 .
 
